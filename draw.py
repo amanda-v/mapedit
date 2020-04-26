@@ -40,14 +40,14 @@ if not os.path.exists("data"):
     os.mkdir("data")
 
 factor = 56*2*2 #one extra 2 for the initial div
-for z in range(4,7):
+for z in range(4,8):
     factor = int(factor / 2)
     fa = factor * 256
     f={}
     if not os.path.exists("data/"+str(z)):
         os.mkdir("data/"+str(z))
-    for sx in range(16):
-        for sy in range(14):
+    for sx in range(32):
+        for sy in range(28):
             f[(sx,sy)] = []
     
     for a in range(len(gx)):
@@ -57,8 +57,8 @@ for z in range(4,7):
         oy = int((y % fa) / factor)
         f[(int(x/fa), int(y/fa))].append((ox, oy))
                 
-    for sx in range(16):
-        for sy in range(14):
+    for sx in range(32):
+        for sy in range(28):
             if not os.path.exists("data/"+str(z)+"/"+str(sx)):
                 os.mkdir("data/"+str(z)+"/"+str(sx))
             plot(f, sx, sy, factor, z)
