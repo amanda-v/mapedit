@@ -56,8 +56,8 @@ $(document).ready(function () {
 
     map.addControl(new TitleLabel());
     map.addControl(new CoordinatesControl());
-    map.addControl(new RegionBaseCoordinatesControl());
-    map.addControl(new LocalCoordinatesControl());
+    //map.addControl(new RegionBaseCoordinatesControl());
+    //map.addControl(new LocalCoordinatesControl());
     map.addControl(L.control.zoom());
     map.addControl(new PlaneControl());
     map.addControl(new LocationLookupControl());
