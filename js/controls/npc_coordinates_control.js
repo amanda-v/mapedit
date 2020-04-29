@@ -49,7 +49,7 @@ export var NPCCoordinatesControl = L.Control.extend({
             var tempIdx = Math.floor(
               Math.random() * that.npcs[that.npcs.length - 1].idx
             );
-            that.currentCords.idx = that.npcs[tempIdx].idx;
+            that.currentCords = that.npcs[tempIdx];
           } while (that.currentCords.idx == undefined);
         }
 
