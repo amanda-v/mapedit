@@ -70,16 +70,46 @@ export var NPCCoordinatesControl = L.Control.extend({
       return;
     }
 
+    var popupContent =
+      "NPC " + this.currentCords.idx + " on x:" + x + " y:" + y + " z: " + z;
+
     if (action === 1) {
       console.log("marker updated ");
       this._removeMarker();
       this._addMarker();
+      Swal({
+        position: "top",
+        type: "success",
+        title: `Marker update`,
+        text: popupContent,
+        showConfirmButton: false,
+        timer: 4000,
+        toast: true,
+      });
     } else if (action === 2) {
       console.log("marker removed ");
       this._removeMarker();
+      Swal({
+        position: "top",
+        type: "success",
+        title: `Marker removed`,
+        text: popupContent,
+        showConfirmButton: false,
+        timer: 4000,
+        toast: true,
+      });
     } else if (action === 0) {
       console.log("marker added ");
       this._addMarker();
+      Swal({
+        position: "top",
+        type: "success",
+        title: `Add new marker`,
+        text: popupContent,
+        showConfirmButton: false,
+        timer: 4000,
+        toast: true,
+      });
     }
 
     // if (this._map.plane != z) {
