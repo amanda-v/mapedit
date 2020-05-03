@@ -31,6 +31,9 @@ export var NPCCoordinatesControl = L.Control.extend({
     L.DomEvent.disableClickPropagation(container);
     const ws_connection = Config.ws.ws_connection;
 
+    // this._testMove();
+    // return container;
+
     ws_connection.on("connected_server", (data) => {
       console.log("msg from the server: ", data.msg);
       ws_connection.emit("npc_client", { msg: "hi server" });
@@ -115,7 +118,8 @@ export var NPCCoordinatesControl = L.Control.extend({
 
       this._removeMarker();
       //   this.npc.prevCords = this.npc.currentCords;
-      this._addMarker();
+      // this._addMarker();
+      this._moveMarker();
       Swal({
         position: "top",
         type: "success",
@@ -196,13 +200,66 @@ export var NPCCoordinatesControl = L.Control.extend({
       }
     });
   },
+  _moveMarker: function () {
+    var markerIcon = this._getMarkerColor();
+    this._searchMarker = L.Marker.movingMarker(
+      [
+        new Position(
+          this.npc.prevCords.x,
+          this.npc.prevCords.y,
+          this.npc.prevCords.z
+        ).toCentreLatLng(this._map),
+        new Position(
+          this.npc.currentCords.x,
+          this.npc.currentCords.y,
+          this.npc.currentCords.z
+        ).toCentreLatLng(this._map),
+      ],
+      [2000],
+      { autostart: true, loop: false, icon: markerIcon }
+    );
+    this._addPopupContentTo();
+    this._searchMarker.addTo(this._map);
+  },
+  _testMove: function () {
+    var markerIcon = this._getMarkerColor();
+    var tempMarker = L.Marker;
+    tempMarker
+      .movingMarker(
+        [
+          new Position(8000, -20177, 1).toCentreLatLng(this._map),
+          new Position(34426, 27889, 1).toCentreLatLng(this._map),
+        ],
+        [2000],
+        { autostart: true, loop: false, icon: markerIcon }
+      )
+      .addTo(this._map);
+    console.log("test move");
+  },
   _addMarker: function () {
     var x = this.npc.currentCords.x;
     var y = this.npc.currentCords.y;
     var z = this.npc.currentCords.z;
+
+    var markerIcon = this._getMarkerColor();
+
+    this._searchMarker = new L.marker(
+      new Position(x, y, z).toCentreLatLng(this._map),
+      { icon: markerIcon }
+    );
+    this._addPopupContentTo();
+    this._searchMarker.addTo(this._map);
+
+    // this._map.panTo(this._searchMarker.getLatLng());
+  },
+  _removeNpcFromList: function (idx) {
+    this.npcs = this.npcs.filter((elem) => elem.idx != idx);
+  },
+
+  _getMarkerColor: function () {
     var npc_type = this.npc.npcType;
     var marker_icon = npc_type == 0 ? "grey" : "red";
-    var greenIcon = new L.Icon({
+    var markerIcon = new L.Icon({
       iconUrl:
         "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-" +
         marker_icon +
@@ -215,30 +272,22 @@ export var NPCCoordinatesControl = L.Control.extend({
       shadowSize: [41, 41],
     });
 
-    this._searchMarker = new L.marker(
-      new Position(x, y, z).toCentreLatLng(this._map),
-      { icon: greenIcon }
-    );
+    return markerIcon;
+  },
 
+  _addPopupContentTo: function () {
     var popupContent =
       "<p>NPC " +
       this.npc.idx +
       "<br> NPC type: " +
-      npc_type +
+      this.npc.npcType +
       " <br> x:" +
-      x +
+      this.npc.currentCords.x +
       "<br> y:" +
-      y +
+      this.npc.currentCords.y +
       "<br> z: " +
-      z +
+      this.npc.currentCords.z +
       "</p>";
     this._searchMarker.bindPopup(popupContent).openPopup();
-
-    this._searchMarker.addTo(this._map);
-
-    // this._map.panTo(this._searchMarker.getLatLng());
-  },
-  _removeNpcFromList: function (idx) {
-    this.npcs = this.npcs.filter((elem) => elem.idx != idx);
   },
 });

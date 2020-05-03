@@ -31,6 +31,9 @@ export var PlayerCoordinatesControl = L.Control.extend({
     L.DomEvent.disableClickPropagation(container);
     const ws_connection = Config.ws.ws_connection;
 
+    // this._testMove();
+    // return container;
+
     ws_connection.on("connected_server", (data) => {
       console.log("msg from the server: ", data.msg);
       ws_connection.emit("player_client", { msg: "hi server" });
@@ -90,7 +93,7 @@ export var PlayerCoordinatesControl = L.Control.extend({
         }
 
         that._updateCoordinates(action);
-      }, 9000);
+      }, 12000);
     });
 
     return container;
@@ -124,7 +127,8 @@ export var PlayerCoordinatesControl = L.Control.extend({
 
       this._removeMarker();
       //   this.player.prevCords = this.player.currentCords;
-      this._addMarker();
+      // this._addMarker();
+      this._moveMarker();
       Swal({
         position: "top",
         type: "success",
@@ -205,13 +209,66 @@ export var PlayerCoordinatesControl = L.Control.extend({
       }
     });
   },
+  _moveMarker: function () {
+    var markerIcon = this._getMarkerColor();
+    this._searchMarker = L.Marker.movingMarker(
+      [
+        new Position(
+          this.player.prevCords.x,
+          this.player.prevCords.y,
+          this.player.prevCords.z
+        ).toCentreLatLng(this._map),
+        new Position(
+          this.player.currentCords.x,
+          this.player.currentCords.y,
+          this.player.currentCords.z
+        ).toCentreLatLng(this._map),
+      ],
+      [2000],
+      { autostart: true, loop: false, icon: markerIcon }
+    );
+    this._addPopupContentTo();
+    this._searchMarker.addTo(this._map);
+  },
+  _testMove: function () {
+    var markerIcon = this._getMarkerColor();
+    var tempMarker = L.Marker;
+    tempMarker
+      .movingMarker(
+        [
+          new Position(8000, -20177, 1).toCentreLatLng(this._map),
+          new Position(34426, 27889, 1).toCentreLatLng(this._map),
+        ],
+        [2000],
+        { autostart: true, loop: false, icon: markerIcon }
+      )
+      .addTo(this._map);
+    console.log("test move");
+  },
   _addMarker: function () {
     var x = this.player.currentCords.x;
     var y = this.player.currentCords.y;
     var z = this.player.currentCords.z;
+
+    var markerIcon = this._getMarkerColor();
+
+    this._searchMarker = new L.marker(
+      new Position(x, y, z).toCentreLatLng(this._map),
+      { icon: markerIcon }
+    );
+    this._addPopupContentTo();
+    this._searchMarker.addTo(this._map);
+
+    // this._map.panTo(this._searchMarker.getLatLng());
+  },
+  _removeplayerFromList: function (idx) {
+    this.players = this.players.filter((elem) => elem.idx != idx);
+  },
+
+  _getMarkerColor: function () {
     var player_type = this.player.playerType;
     var marker_icon = player_type == 0 ? "blue" : "blue";
-    var greenIcon = new L.Icon({
+    var markerIcon = new L.Icon({
       iconUrl:
         "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-" +
         marker_icon +
@@ -224,30 +281,22 @@ export var PlayerCoordinatesControl = L.Control.extend({
       shadowSize: [41, 41],
     });
 
-    this._searchMarker = new L.marker(
-      new Position(x, y, z).toCentreLatLng(this._map),
-      { icon: greenIcon }
-    );
+    return markerIcon;
+  },
 
+  _addPopupContentTo: function () {
     var popupContent =
       "<p>player " +
       this.player.idx +
       "<br> player type: " +
-      player_type +
+      this.player.playerType +
       " <br> x:" +
-      x +
+      this.player.currentCords.x +
       "<br> y:" +
-      y +
+      this.player.currentCords.y +
       "<br> z: " +
-      z +
+      this.player.currentCords.z +
       "</p>";
     this._searchMarker.bindPopup(popupContent).openPopup();
-
-    this._searchMarker.addTo(this._map);
-
-    // this._map.panTo(this._searchMarker.getLatLng());
-  },
-  _removeplayerFromList: function (idx) {
-    this.players = this.players.filter((elem) => elem.idx != idx);
   },
 });
