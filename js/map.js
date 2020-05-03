@@ -6,8 +6,9 @@ import { Position } from "./model/Position.js";
 import { CollectionControl } from "./controls/collection_control.js";
 import { CoordinatesControl } from "./controls/coordinates_control.js";
 import { NPCCoordinatesControl } from "./controls/npc_coordinates_control.js";
-// import { LocalCoordinatesControl } from "./controls/local_coordinates_control.js";
-// import { RegionBaseCoordinatesControl } from "./controls/region_base_coordinates_control.js";
+import { PlayerCoordinatesControl } from "./controls/player_coordinates_control.js";
+import { LocalCoordinatesControl } from "./controls/local_coordinates_control.js";
+import { RegionBaseCoordinatesControl } from "./controls/region_base_coordinates_control.js";
 import { GridControl } from "./controls/grid_control.js";
 import { LocationLookupControl } from "./controls/location_lookup_control.js";
 import { MapLabelControl } from "./controls/map_label_control.js";
@@ -56,9 +57,10 @@ $(document).ready(function () {
 
   map.addControl(new TitleLabel());
   map.addControl(new CoordinatesControl());
-  //map.addControl(new RegionBaseCoordinatesControl());
-  //map.addControl(new LocalCoordinatesControl());
+  map.addControl(new RegionBaseCoordinatesControl());
+  map.addControl(new LocalCoordinatesControl());
   map.addControl(new NPCCoordinatesControl());
+  map.addControl(new PlayerCoordinatesControl());
   map.addControl(L.control.zoom());
   map.addControl(new PlaneControl());
   map.addControl(new LocationLookupControl());

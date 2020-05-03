@@ -1,5 +1,5 @@
 export var Config = {
   ws: {
-    url: "ws://localhost:8080",
+    ws_connection: io("http://localhost:8080"),
   },
 };

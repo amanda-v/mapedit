@@ -3,14 +3,14 @@
 import { Config } from "../config.js";
 import { Position } from "../model/Position.js";
 
-export var NPCCoordinatesControl = L.Control.extend({
+export var PlayerCoordinatesControl = L.Control.extend({
   options: {
     position: "topleft",
   },
 
-  npc: {
+  player: {
     idx: 0,
-    npcType: 0,
+    playerType: 0,
     currentCords: {
       x: 0,
       y: 0,
@@ -22,7 +22,7 @@ export var NPCCoordinatesControl = L.Control.extend({
       z: 0,
     },
   },
-  npcs: [],
+  players: [],
 
   onAdd: function (map) {
     var container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
@@ -33,72 +33,73 @@ export var NPCCoordinatesControl = L.Control.extend({
 
     ws_connection.on("connected_server", (data) => {
       console.log("msg from the server: ", data.msg);
-      ws_connection.emit("npc_client", { msg: "hi server" });
+      ws_connection.emit("player_client", { msg: "hi server" });
     });
-    ws_connection.on("npc_server", (data) => {
-      console.log("msg from the server to npc: ", data.msg);
+    ws_connection.on("player_server", (data) => {
+      console.log("msg from the server to player: ", data.msg);
       var that = this;
-      //Generating new random npc's coords every 3 seconds
+      //Generating new random player's coords every 3 seconds
       setInterval(function () {
-        var action = that.npcs.length < 3 ? 0 : Math.floor(Math.random() * 3); // 0: new, 1: update, 2: delete, 3: update bot
+        var action =
+          that.players.length < 3 ? 0 : Math.floor(Math.random() * 3); // 0: new, 1: update, 2: delete, 3: update bot
         if (action === 0) {
-          that.npc.idx =
-            that.npcs.length === 0
+          that.player.idx =
+            that.players.length === 0
               ? 0
-              : that.npcs[that.npcs.length - 1].idx + 1;
-          that.npc.npcType = Math.floor(Math.random() * 2); //0: general npc, 1: special npc
-          that.npc.currentCords.x = Math.floor(
+              : that.players[that.players.length - 1].idx + 1;
+          that.player.playerType = Math.floor(Math.random() * 2); //0: general player, 1: special player
+          that.player.currentCords.x = Math.floor(
             (Math.random() - 0.5) * 49000 * 2
           );
-          that.npc.currentCords.y = Math.floor(
+          that.player.currentCords.y = Math.floor(
             (Math.random() - 0.5) * 45000 * 2
           );
-          // console.log(that.npc);
+          // console.log(that.player);
         } else if (action === 1) {
-          that.npc.currentCords.x = Math.floor(
+          that.player.currentCords.x = Math.floor(
             (Math.random() - 0.5) * 49000 * 2
           );
-          that.npc.currentCords.y = Math.floor(
+          that.player.currentCords.y = Math.floor(
             (Math.random() - 0.5) * 45000 * 2
           );
           do {
             var tempIdx = Math.floor(
-              Math.random() * that.npcs[that.npcs.length - 1].idx
+              Math.random() * that.players[that.players.length - 1].idx
             );
-            var tempNPC = that.npcs.find((elem) => elem.idx == tempIdx);
-            console.log(tempNPC);
-            if (tempNPC != undefined) {
-              that.npc.idx = tempIdx;
-              that.npc.npcType = tempNPC.npcType;
-              that.npc.prevCords = tempNPC.currentCords;
+            var tempplayer = that.players.find((elem) => elem.idx == tempIdx);
+            console.log(tempplayer);
+            if (tempplayer != undefined) {
+              that.player.idx = tempIdx;
+              that.player.playerType = tempplayer.playerType;
+              that.player.prevCords = tempplayer.currentCords;
             }
-          } while (tempNPC == undefined);
+          } while (tempplayer == undefined);
         } else if (action === 2) {
           do {
             var tempIdx = Math.floor(
-              Math.random() * that.npcs[that.npcs.length - 1].idx
+              Math.random() * that.players[that.players.length - 1].idx
             );
-            var tempNPC = that.npcs.find((elem) => elem.idx == tempIdx);
-            console.log(tempNPC);
-            if (tempNPC != undefined) {
-              that.npc.idx = tempIdx;
-              that.npc.npcType = tempNPC.npcType;
-              that.npc.prevCords = tempNPC.currentCords;
+            var tempplayer = that.players.find((elem) => elem.idx == tempIdx);
+            console.log(tempplayer);
+            if (tempplayer != undefined) {
+              that.player.idx = tempIdx;
+              that.player.playerType = tempplayer.playerType;
+              that.player.prevCords = tempplayer.currentCords;
             }
-          } while (tempNPC == undefined);
+          } while (tempplayer == undefined);
         }
 
         that._updateCoordinates(action);
-      }, 5000);
+      }, 9000);
     });
 
     return container;
   },
 
   _updateCoordinates: function (action) {
-    var x = this.npc.currentCords.x;
-    var y = this.npc.currentCords.y;
-    var z = this.npc.currentCords.z;
+    var x = this.player.currentCords.x;
+    var y = this.player.currentCords.y;
+    var z = this.player.currentCords.z;
     var markers = [];
     var that = this;
 
@@ -106,15 +107,23 @@ export var NPCCoordinatesControl = L.Control.extend({
       return;
     }
 
-    var npc_type = this.npc.npcType == 0 ? "General" : "Special";
+    var player_type = this.player.playerType == 0 ? "General" : "Special";
     var popupContent =
-      npc_type + " NPC " + this.npc.idx + " on x:" + x + " y:" + y + " z: " + z;
+      player_type +
+      " player " +
+      this.player.idx +
+      " on x:" +
+      x +
+      " y:" +
+      y +
+      " z: " +
+      z;
 
     if (action === 1) {
       console.log("marker updated ");
 
       this._removeMarker();
-      //   this.npc.prevCords = this.npc.currentCords;
+      //   this.player.prevCords = this.player.currentCords;
       this._addMarker();
       Swal({
         position: "top",
@@ -128,7 +137,7 @@ export var NPCCoordinatesControl = L.Control.extend({
     } else if (action === 2) {
       console.log("marker removed ");
       this._removeMarker();
-      this._removeNpcFromList(this.npc.idx);
+      this._removeplayerFromList(this.player.idx);
       Swal({
         position: "top",
         type: "success",
@@ -139,24 +148,24 @@ export var NPCCoordinatesControl = L.Control.extend({
         toast: true,
       });
     } else if (action === 0) {
-      console.log("npc:");
-      console.log(this.npc);
-      var tempNpc = {
-        idx: that.npc.idx,
-        npcType: that.npc.npcType,
+      console.log("player:");
+      console.log(this.player);
+      var tempplayer = {
+        idx: that.player.idx,
+        playerType: that.player.playerType,
         currentCords: {
-          x: that.npc.currentCords.x,
-          y: that.npc.currentCords.y,
-          z: that.npc.currentCords.z,
+          x: that.player.currentCords.x,
+          y: that.player.currentCords.y,
+          z: that.player.currentCords.z,
         },
         prevCords: {
-          x: that.npc.prevCords.x,
-          y: that.npc.prevCords.y,
-          z: that.npc.prevCords.z,
+          x: that.player.prevCords.x,
+          y: that.player.prevCords.y,
+          z: that.player.prevCords.z,
         },
       };
-      that.npcs.push(tempNpc);
-      console.log(that.npcs);
+      that.players.push(tempplayer);
+      console.log(that.players);
       console.log("marker added ");
       this._addMarker();
       Swal({
@@ -183,9 +192,9 @@ export var NPCCoordinatesControl = L.Control.extend({
         if (that._map.getBounds().contains(layer.getLatLng())) {
           //   markers.push(layer);
           var newLatlng = new Position(
-            that.npc.prevCords.x,
-            that.npc.prevCords.y,
-            that.npc.prevCords.z
+            that.player.prevCords.x,
+            that.player.prevCords.y,
+            that.player.prevCords.z
           ).toCentreLatLng(that._map);
           var tempLatlng = layer.getLatLng();
 
@@ -197,11 +206,11 @@ export var NPCCoordinatesControl = L.Control.extend({
     });
   },
   _addMarker: function () {
-    var x = this.npc.currentCords.x;
-    var y = this.npc.currentCords.y;
-    var z = this.npc.currentCords.z;
-    var npc_type = this.npc.npcType;
-    var marker_icon = npc_type == 0 ? "grey" : "red";
+    var x = this.player.currentCords.x;
+    var y = this.player.currentCords.y;
+    var z = this.player.currentCords.z;
+    var player_type = this.player.playerType;
+    var marker_icon = player_type == 0 ? "blue" : "blue";
     var greenIcon = new L.Icon({
       iconUrl:
         "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-" +
@@ -221,10 +230,10 @@ export var NPCCoordinatesControl = L.Control.extend({
     );
 
     var popupContent =
-      "<p>NPC " +
-      this.npc.idx +
-      "<br> NPC type: " +
-      npc_type +
+      "<p>player " +
+      this.player.idx +
+      "<br> player type: " +
+      player_type +
       " <br> x:" +
       x +
       "<br> y:" +
@@ -238,7 +247,7 @@ export var NPCCoordinatesControl = L.Control.extend({
 
     // this._map.panTo(this._searchMarker.getLatLng());
   },
-  _removeNpcFromList: function (idx) {
-    this.npcs = this.npcs.filter((elem) => elem.idx != idx);
+  _removeplayerFromList: function (idx) {
+    this.players = this.players.filter((elem) => elem.idx != idx);
   },
 });
